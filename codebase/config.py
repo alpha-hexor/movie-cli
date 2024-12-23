@@ -1,0 +1,13 @@
+#Movie/tv stuff
+POP_MAIN_URL = 'aHR0cHM6Ly9wb3Bjb3JubW92aWVzLnRv'
+POP_WORKER_URL = 'aHR0cHM6Ly9mbGl4c2NyYXBlLnBvcGNvcm5tb3ZpZXMudG8='
+EMBED_URL = "aHR0cHM6Ly90b20uYXV0b2VtYmVkLmNj"
+
+#anime stuff
+ANIME_BASE = ""
+ANIME_REF = "aHR0cHM6Ly9hbGxtYW5nYS50bw=="
+ANIME_API = "aHR0cHM6Ly9hcGkuYWxsYW5pbWUuZGF5"
+
+#kdrama
+KDRAMA_URL = "aHR0cHM6Ly9hc2lhbmMuY28="
+KDRAMA_CDN =  "aHR0cHM6Ly9lbWJhc2ljLnBybw=="
