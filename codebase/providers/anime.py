@@ -1,6 +1,7 @@
 from ..utils.http_client import client
 from ..utils.logger import get_logger
 from ..extractors.allanime import generate_stream_url
+from ..utils.player import start_streaming
 import json
 from base64 import b64decode
 from typing import List,Tuple
@@ -158,6 +159,7 @@ class Anime:
                     "Referer" : self.ref_url
                 },
                 params=payload,
+                timeout=None
             )
 
             if r.status_code == 200:
@@ -166,7 +168,14 @@ class Anime:
                 logger.debug(f"Unique encrypted urls found: {len(encrypted_urls)}")
 
                 if encrypted_urls:
-                    generate_stream_url(encrypted_urls = encrypted_urls)
+                    stream_data = generate_stream_url(encrypted_urls = encrypted_urls[:5] if len(encrypted_urls)>5 else encrypted_urls)
+                    
+                    logger.debug(f"Found valid stream data: {stream_data}")
+                    
+                    logger.info(f"Streaming episode from: {stream_data['streaming_primary_url']} with referrer={stream_data['provider_ref']}")
+
+                    start_streaming(streaming_url=stream_data['streaming_primary_url'],extra_args=f'--referrer={stream_data['provider_ref']}')                    
+
                 else:
                     logger.error(f"Encrypted urls are: {r.json()}")
                     raise Exception("Valid Urls not found")

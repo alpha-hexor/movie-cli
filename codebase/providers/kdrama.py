@@ -66,7 +66,7 @@ class Drama:
 
             if r.status_code == 200:
                 iframe_link = re.findall(r'iframe .+? src="(.*?)"',r.text)[0]
-                logger.debug(f"[*]Iframe link: {iframe_link}")
+                logger.debug(f"[*]Iframe link: https:{iframe_link}")
 
                 r =client.get(f"https:{iframe_link}")
                 cdn_link = str(r.url)

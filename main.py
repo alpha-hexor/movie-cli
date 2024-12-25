@@ -21,8 +21,8 @@ def cli():
     pass
 
 @click.command(
-    name="search",
-    help="Search for media"
+    name="stream",
+    help="Stream for media"
 )
 @click.argument(
     "query",
@@ -32,7 +32,7 @@ def cli():
     "-t",
     "--type",
     default="movie",
-    help="Type of media to search for i.e [tv,movie,kdrama,anime]",
+    help="Type of media to stream for i.e [tv,movie,kdrama,anime]. Default:movie",
     required=True
 )
 @click.option(
@@ -41,8 +41,7 @@ def cli():
     default = 'sub',
     help = "Only applicable for anime provider[sub/dub].Default is sub"
 )
-def search(query:str,type:str,mode:str):
-    # click.echo(click.style(f"[*]Searching for {query}:{type}",fg="green"))
+def stream(query:str,type:str,mode:str):
     logger.info(f"Searching for {query}:{type}")
     
     #use the provider mapper
@@ -60,19 +59,13 @@ def search(query:str,type:str,mode:str):
             media_url = search_result[index-1][0]
 
             if type == "movie":
-                pass
+                provider.movie_streaming(url=media_url)
+
             else:
                 episode_data = provider.get_episode_data(media_url)
-
-                if 'season_count' in episode_data :
-                    pass
-                
-                
-                else:
-                    click.echo(click.style(f"Total episodes found: {episode_data['episode_count']}",fg="green"))
-                    start_ep = click.prompt("[*]Enter episode to watch: ",type=int)
-
-                    provider.stream_episode(start_ep = start_ep,end_ep = episode_data['episode_count'])
+                click.echo(click.style(f"Total episodes found: {episode_data['episode_count']}",fg="green"))
+                start_ep = click.prompt("[*]Enter episode to watch: ",type=int)
+                provider.stream_episode(start_ep = start_ep,end_ep = episode_data['episode_count'])
 
         else:
             click.echo(click.style("[-]No results found",fg="red"))
@@ -81,7 +74,7 @@ def search(query:str,type:str,mode:str):
 
 
 # add commands to the group
-cli.add_command(search)
+cli.add_command(stream)
 
 if __name__ == "__main__":
     cli()

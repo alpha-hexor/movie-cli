@@ -10,7 +10,10 @@ def start_streaming(**kwargs)->None:
         f"{streaming_url}"
     ]
 
-    player = subprocess.Popen(player_args)
+    if "extra_args" in kwargs:
+        player_args.append(kwargs["extra_args"])
+
+    player = subprocess.Popen(player_args,shell=False)
     player.wait()
     player.kill()
 
