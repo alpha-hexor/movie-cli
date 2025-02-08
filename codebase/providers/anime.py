@@ -16,6 +16,7 @@ class Anime:
         self.ref_url: str= b64decode(config.ANIME_REF).decode()
         self.mode:str = ""
         self.anime_id:str = ""
+        self.anime_episode_list:list = []
 
     def search(self,query:str,**kwargs)->List[Tuple[str,str]]:
 
@@ -112,11 +113,12 @@ class Anime:
             timeout=None
         )
 
-        ep_count = r.json()["data"]["show"]["availableEpisodesDetail"][self.mode]
+        self.anime_episode_list = r.json()["data"]["show"]["availableEpisodesDetail"][self.mode]
+        self.anime_episode_list = self.anime_episode_list[::-1]
 
-        if ep_count:
+        if self.anime_episode_list:
             return {
-                "episode_count": len(ep_count)
+                "episode_count": len(self.anime_episode_list)
             }
         else:
             raise Exception(f"[-]No episode found for mode: {self.mode}")
@@ -144,9 +146,9 @@ class Anime:
         }
 
         for ep in range(start_ep,end_ep+1):
-            logger.info(f"Generating streaming link for episode: {ep}, mode: {self.mode}")
+            logger.info(f"Generating streaming link for episode: {self.anime_episode_list[ep-1]}, mode: {self.mode}")
 
-            variables["episodeString"] =  f"{ep}"
+            variables["episodeString"] =  f"{self.anime_episode_list[ep-1]}"
 
             payload = {
                 "variables" : json.dumps(variables),
