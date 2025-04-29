@@ -25,7 +25,7 @@ def generate_stream_url(encrypted_urls:list)->dict:
 
     for url in encrypted_urls:
         decrypted_url = decrypt(password=56,encrypted_part=url)
-        print(decrypted_url)
+        
         if decrypted_url.startswith("https:"):
             stream_data["streaming_primary_url"] = decrypted_url
         else:
