@@ -3,7 +3,7 @@ from codebase.providers.pop import POP
 from codebase.providers.anime import Anime
 from codebase.providers.kdrama import Drama
 from codebase.utils.logger import get_logger
-
+from codebase.utils.player import start_streaming
 
 logger = get_logger("cli-logger")
 
@@ -59,14 +59,25 @@ def stream(query:str,type:str,mode:str):
             media_url = search_result[index-1][0]
 
             if type == "movie":
-                provider.movie_streaming(url=media_url)
+                media_data:dict = provider.movie_streaming(url=media_url)
+                start_streaming(streaming_data = media_data)
+
 
             else:
                 episode_data = provider.get_episode_data(media_url)
+                
                 click.echo(click.style(f"Total episodes found: {episode_data['episode_count']}",fg="green"))
-                start_ep = click.prompt("[*]Enter episode to watch: ",type=int)
-                provider.stream_episode(start_ep = start_ep,end_ep = episode_data['episode_count'])
-
+                
+                ep_range = click.prompt("[*]Enter episode range [start:end]: ",type=str)
+                
+                start_ep = int(ep_range.split(":")[0])
+                
+                end_ep = int(ep_range.split(":")[1])
+                
+                #loop through start to end
+                for ep in range(start_ep,end_ep+1):
+                    media_data:dict = provider.episode_data(episode_number=ep)
+                    start_streaming(streaming_data = media_data)
         else:
             click.echo(click.style("[-]No results found",fg="red"))
     else:

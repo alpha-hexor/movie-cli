@@ -1,6 +1,5 @@
 from ..utils.http_client import client
 from ..utils.logger import get_logger
-from ..utils.player import  start_streaming
 from ..extractors.tmdb import extarct_tmdb
 from base64 import b64decode
 from typing import List,Tuple
@@ -71,19 +70,8 @@ class POP:
 
         logger.debug(f"Extracted streamming links: {media_data}")
 
-        if media_data["streaming_primary_link"] or media_data["streaming_backup_url"]:
-            streaming_link = media_data["streaming_primary_link"] if media_data["streaming_primary_link"] else media_data["streaming_backup_link"]
-
-            if media_data["subtitle_url"]:
-                sub = media_data['subtitle_url']
-                logger.info(f"Streaming link: {streaming_link} with sub: {sub}")
-
-                start_streaming(streaming_url=streaming_link,extra_args = f'--sub-file={sub}')
-            
-            else:
-                logger.debug(f"Streaming link: {streaming_link}")
-
-                start_streaming(streaming_url=streaming_link)
+        if media_data["streaming_primary_url"] or media_data["streaming_backup_url"]:
+            return media_data
         else:
             logger.error("No streaming link found")
             raise Exception(f"[-]No sreaming link found")
@@ -122,33 +110,21 @@ class POP:
 
 
         
-    def stream_episode(self,start_ep:int,end_ep:int):
-        logger.info(f"Streaming episode {start_ep} to {end_ep}")
+    def episode_data(self,episode_number:int):
 
-        for i in range(start_ep,end_ep+1):
-            logger.info(f"[*]Streaming episode {i}")
+        logger.info(f"[*]Streaming episode {episode_number}")
+        
+        ep_url = f"{self.tv_media_url}/{self.season}-{episode_number}"
+        
+        data = self.get_metadata(url=ep_url)
+        
+        media_data = extarct_tmdb(tmdb_id=data["tmdb_id"],media_type="tv",sig=data["sig"],track = data["track"],season=self.season,episode=episode_number)
+
+        logger.debug(f"Extracted streamming links: {media_data}")
+
+        if media_data["streaming_primary_url"] or media_data["streaming_backup_url"]:
+            return media_data
             
-            ep_url = f"{self.tv_media_url}/{self.season}-{i}"
-            
-            data = self.get_metadata(url=ep_url)
-
-            media_data = extarct_tmdb(tmdb_id=data["tmdb_id"],media_type="tv",sig=data["sig"],track = data["track"],season=self.season,episode=i)
-
-            logger.debug(f"Extracted streamming links: {media_data}")
-
-            if media_data["streaming_primary_link"] or media_data["streaming_backup_url"]:
-                streaming_link = media_data["streaming_primary_link"] if media_data["streaming_primary_link"] else media_data["streaming_backup_link"]
-
-                if media_data["subtitle_url"]:
-                    sub = media_data['subtitle_url']
-                    logger.info(f"Streaming link: {streaming_link} with sub: {sub}")
-
-                    start_streaming(streaming_url=streaming_link,extra_args = f'--sub-file={sub}')
-
-                else:
-                    logger.debug(f"Streaming link: {streaming_link}")
-
-                    start_streaming(streaming_url=streaming_link)
-            else:
-                logger.error("No streaming link found")
-                raise Exception(f"[-]No streaming link found")
+        else:
+            logger.error("No streaming link found")
+            raise Exception(f"[-]No streaming link found") 

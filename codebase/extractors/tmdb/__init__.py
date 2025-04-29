@@ -25,7 +25,7 @@ POP_HEADERS = {
 
 def extarct_tmdb(tmdb_id:str,media_type:str,**kwargs)->dict:
     data = {
-        "streaming_primary_link" : "",
+        "streaming_primary_url" : "",
         "streaming_backup_url" : []
     }
     signature = kwargs.get('sig',"")
@@ -57,7 +57,7 @@ def extarct_tmdb(tmdb_id:str,media_type:str,**kwargs)->dict:
 
     if streaming_link :
         logger.debug(f"Autoembed streaming link found: {streaming_link}")
-        data["streaming_primary_link"] = streaming_link
+        data["streaming_primary_url"] = streaming_link
             
         if subtitle:
             data["subtitle_url"] = subtitle

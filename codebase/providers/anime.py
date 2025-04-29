@@ -124,8 +124,7 @@ class Anime:
             raise Exception(f"[-]No episode found for mode: {self.mode}")
         
 
-    def stream_episode(self,start_ep:int,end_ep:int):
-        logger.info(f"Streaming episode from {start_ep} to {end_ep}")
+    def episode_data(self,episode_number:int)->dict:
 
         episode_embed_gql = """
         query ($showId: String!, $translationType: VaildTranslationTypeEnumType!, $episodeString: String!) {
@@ -145,44 +144,41 @@ class Anime:
             "translationType": self.mode
         }
 
-        for ep in range(start_ep,end_ep+1):
-            logger.info(f"Generating streaming link for episode: {self.anime_episode_list[ep-1]}, mode: {self.mode}")
+        logger.info(f"Generating streaming link for episode: {self.anime_episode_list[episode_number-1]}, mode: {self.mode}")
 
-            variables["episodeString"] =  f"{self.anime_episode_list[ep-1]}"
+        variables["episodeString"] =  f"{self.anime_episode_list[episode_number-1]}"
 
-            payload = {
-                "variables" : json.dumps(variables),
-                "query" : episode_embed_gql
-            }
+        payload = {
+            "variables" : json.dumps(variables),
+            "query" : episode_embed_gql
+        }
 
-            r = client.get(
-                f"{self.api_url}/api",
-                headers={
-                    "Referer" : self.ref_url
-                },
-                params=payload,
-                timeout=None
-            )
+        r = client.get(
+            f"{self.api_url}/api",
+            headers={
+                "Referer" : self.ref_url
+            },
+            params=payload,
+            timeout=None
+        )
 
-            if r.status_code == 200:
-                encrypted_urls = re.findall(r'"sourceUrl":"--(\w+)"',r.text)
-                encrypted_urls = list(set(encrypted_urls))
-                logger.debug(f"Unique encrypted urls found: {len(encrypted_urls)}")
+        if r.status_code == 200:
+            encrypted_urls = re.findall(r'"sourceUrl":"--(\w+)"',r.text)
+            encrypted_urls = list(set(encrypted_urls))
+            logger.debug(f"Unique encrypted urls found: {len(encrypted_urls)}")
 
-                if encrypted_urls:
-                    stream_data = generate_stream_url(encrypted_urls = encrypted_urls[:5] if len(encrypted_urls)>5 else encrypted_urls)
+            if encrypted_urls:
+                stream_data = generate_stream_url(encrypted_urls = encrypted_urls[:5] if len(encrypted_urls)>5 else encrypted_urls)
                     
-                    logger.debug(f"Found valid stream data: {stream_data}")
-                    
-                    logger.info(f"Streaming episode from: {stream_data['streaming_primary_url']} with referrer={stream_data['provider_ref']}")
+                logger.debug(f"Found valid stream data: {stream_data}")
 
-                    start_streaming(streaming_url=stream_data['streaming_primary_url'],extra_args=f'--referrer={stream_data['provider_ref']}')                    
-
-                else:
-                    logger.error(f"Encrypted urls are: {r.json()}")
-                    raise Exception("Valid Urls not found")
+                return stream_data                   
 
             else:
-                raise Exception("Failed to generate streaming link")
+                logger.error(f"Encrypted urls are: {r.json()}")
+                raise Exception("Valid Urls not found")
+
+        else:
+            raise Exception("Failed to generate streaming link")
 
 

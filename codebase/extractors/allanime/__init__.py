@@ -1,7 +1,6 @@
 from ... import config
 from ...utils.logger import get_logger
 from ...utils.http_client import client
-import json
 from base64 import b64decode
 
 logger = get_logger("allanime-extractor")
@@ -26,7 +25,7 @@ def generate_stream_url(encrypted_urls:list)->dict:
 
     for url in encrypted_urls:
         decrypted_url = decrypt(password=56,encrypted_part=url)
-        
+        print(decrypted_url)
         if decrypted_url.startswith("https:"):
             stream_data["streaming_primary_url"] = decrypted_url
         else:
@@ -56,7 +55,7 @@ def generate_stream_url(encrypted_urls:list)->dict:
                 logger.error(f"Stream generation failed for: {decrypted_url}")
                 pass
     
-    stream_data["provider_ref"] = anime_ref
+    stream_data["referrer"] = anime_ref
     return stream_data
 
     

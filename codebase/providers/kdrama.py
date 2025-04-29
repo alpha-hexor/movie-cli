@@ -1,7 +1,6 @@
 from ..utils.http_client import client
 from ..utils.logger import get_logger
 from ..extractors.embasic import get_streaming_url
-from ..utils.player import start_streaming
 from base64 import b64decode
 from typing import List,Tuple
 from .. import config
@@ -52,30 +51,28 @@ class Drama:
         else:
             raise Exception("[-]Failed to fetch episode data")
         
-    def stream_episode(self,start_ep:int,end_ep:int):
-        logger.info(f"Streaming episode {start_ep} to {end_ep}")
-
-        for i in range(start_ep,end_ep+1):
-            logger.info(f"[*]Streaming episode {i}")
+    def episode_data(self,episode_number:int)->dict:
+        logger.info(f"[*]Streaming episode {episode_number}")
             
-            ep_url = f"{self.main_url}{self.episodes_data[-i]}"
+        ep_url = f"{self.main_url}{self.episodes_data[-episode_number]}"
             
-            logger.debug(f"[*]Fetching iframe link from {ep_url}")
+        logger.debug(f"[*]Fetching iframe link from {ep_url}")
             
-            r = client.get(ep_url)
+        r = client.get(ep_url)
 
-            if r.status_code == 200:
-                iframe_link = re.findall(r'iframe .+? src="(.*?)"',r.text)[0]
-                logger.debug(f"[*]Iframe link: https:{iframe_link}")
+        if r.status_code == 200:
+            iframe_link = re.findall(r'iframe .+? src="(.*?)"',r.text)[0]
+            
+            logger.debug(f"[*]Iframe link: https:{iframe_link}")
+            
+            r =client.get(f"https:{iframe_link}")
+            
+            cdn_link = str(r.url)
+            
+            logger.debug(f"[*]CDN LINK: {cdn_link}")
+            
+            streaming_data = get_streaming_url(url=cdn_link)
 
-                r =client.get(f"https:{iframe_link}")
-                cdn_link = str(r.url)
-                logger.debug(f"[*]CDN LINK: {cdn_link}")
+            return streaming_data
 
-                streaming_data = get_streaming_url(url=cdn_link)
-
-                logger.info(f"Using streaming link: {streaming_data['streaming_primary_url']}")
-
-                start_streaming(streaming_url=streaming_data['streaming_primary_url'])
-
-            else:raise Exception("[-]Connection failed")
+        else:raise Exception("[-]Connection failed")
